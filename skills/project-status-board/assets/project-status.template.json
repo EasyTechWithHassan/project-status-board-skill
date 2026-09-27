@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Untitled Project",
+    "subtitle": "One-line summary of what this project delivers.",
+    "updatedAt": "2026-01-01T00:00:00+00:00",
+    "autoRefreshSeconds": 0
+  },
+  "goals": [
+    {
+      "id": "goal-1",
+      "name": "Replace me: first goal",
+      "stages": [
+        {
+          "id": "goal-1-stage-1",
+          "name": "Replace me: first stage",
+          "milestones": [
+            {
+              "id": "goal-1-stage-1-m1",
+              "name": "Replace me: first milestone",
+              "progress": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

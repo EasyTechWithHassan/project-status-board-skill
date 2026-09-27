@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Inventory Platform",
+    "subtitle": "Stock tracking API, web console and production rollout.",
+    "updatedAt": "2026-09-26T16:48:00-07:00",
+    "autoRefreshSeconds": 0
+  },
+  "goals": [
+    {
+      "id": "api",
+      "name": "Core Inventory API",
+      "description": "REST service for items, locations and stock movements.",
+      "stages": [
+        {
+          "id": "api-foundation",
+          "name": "Foundation",
+          "milestones": [
+            {
+              "id": "api-foundation-m1",
+              "name": "Repository, CI and linting",
+              "progress": 100,
+              "evidence": "CI green on main (run #118)"
+            },
+            {
+              "id": "api-foundation-m2",
+              "name": "Database schema and migrations",
+              "progress": 100,
+              "evidence": "migrations/001-004 applied; tests/test_schema.py passes"
+            },
+            {
+              "id": "api-foundation-m3",
+              "name": "Auth middleware",
+              "progress": 100,
+              "evidence": "PR #12 merged; 14 tests pass"
+            }
+          ]
+        },
+        {
+          "id": "api-endpoints",
+          "name": "Endpoints",
+          "milestones": [
+            {
+              "id": "api-endpoints-m1",
+              "name": "Items CRUD",
+              "progress": 100,
+              "evidence": "PR #19 merged"
+            },
+            {
+              "id": "api-endpoints-m2",
+              "name": "Stock movements",
+              "progress": 100,
+              "evidence": "PR #23 merged"
+            },
+            {
+              "id": "api-endpoints-m3",
+              "name": "Search and filtering",
+              "progress": 60,
+              "description": "Query parser done; pagination pending."
+            },
+            {
+              "id": "api-endpoints-m4",
+              "name": "Bulk import",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "api-hardening",
+          "name": "Hardening",
+          "milestones": [
+            {
+              "id": "api-hardening-m1",
+              "name": "Rate limiting",
+              "progress": 0
+            },
+            {
+              "id": "api-hardening-m2",
+              "name": "Load test at 500 rps",
+              "progress": 0
+            },
+            {
+              "id": "api-hardening-m3",
+              "name": "OpenAPI docs",
+              "progress": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "console",
+      "name": "Web Console",
+      "description": "Operator UI for stock lookups and adjustments.",
+      "stages": [
+        {
+          "id": "console-design",
+          "name": "Design",
+          "milestones": [
+            {
+              "id": "console-design-m1",
+              "name": "Wireframes approved",
+              "progress": 100,
+              "evidence": "Signed off in docs/design/console.md"
+            },
+            {
+              "id": "console-design-m2",
+              "name": "Component inventory",
+              "progress": 40
+            }
+          ]
+        },
+        {
+          "id": "console-build",
+          "name": "Build",
+          "milestones": [
+            {
+              "id": "console-build-m1",
+              "name": "Item lookup screen",
+              "progress": 0
+            },
+            {
+              "id": "console-build-m2",
+              "name": "Adjustment workflow",
+              "progress": 0
+            },
+            {
+              "id": "console-build-m3",
+              "name": "Audit history view",
+              "progress": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rollout",
+      "name": "Production Rollout",
+      "stages": [
+        {
+          "id": "rollout-infra",
+          "name": "Infrastructure",
+          "milestones": [
+            {
+              "id": "rollout-infra-m1",
+              "name": "Terraform for staging",
+              "progress": 0
+            },
+            {
+              "id": "rollout-infra-m2",
+              "name": "Terraform for production",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "rollout-launch",
+          "name": "Launch",
+          "milestones": [
+            {
+              "id": "rollout-launch-m1",
+              "name": "Data migration dry run",
+              "progress": 0
+            },
+            {
+              "id": "rollout-launch-m2",
+              "name": "Go-live checklist",
+              "progress": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

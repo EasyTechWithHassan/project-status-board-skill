@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Project Status Board</title>
+  <!--
+    project-status-board — reusable dashboard template.
+    All project data comes from project-status.json (same folder by default,
+    or ?data=<url>). Do not put project-specific content in this file.
+  -->
+  <style>
+    :root{
+      --navy-950:#061a33;
+      --navy-900:#082445;
+      --blue-600:#1677ff;
+      --blue-100:#dcecff;
+      --green-600:#08a665;
+      --green-100:#d7f6e7;
+      --gray-900:#10203d;
+      --gray-600:#5c6e8e;
+      --gray-200:#e6edf6;
+      --shadow:0 18px 45px rgba(17,47,89,.13);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--gray-900);
+      background:
+        radial-gradient(circle at 10% 10%,rgba(43,143,255,.12),transparent 24%),
+        linear-gradient(180deg,#f5f9ff 0,#eef5fc 100%);
+      min-height:100vh;
+    }
+    button{font:inherit}
+    .shell{min-height:100vh}
+    .hero{
+      color:#fff;
+      background:
+        radial-gradient(900px 280px at 62% -15%,rgba(39,127,255,.32),transparent 65%),
+        linear-gradient(135deg,var(--navy-900),var(--navy-950));
+      padding:22px 28px 20px;
+      box-shadow:0 8px 26px rgba(4,24,49,.2);
+    }
+    .hero-top{
+      max-width:1500px;margin:0 auto 18px;
+      display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+    }
+    .brand{display:flex;align-items:flex-start;gap:16px;min-width:0}
+    .app-icon{
+      width:62px;height:62px;border-radius:15px;
+      display:grid;place-items:center;flex:none;
+      background:linear-gradient(145deg,#153d70,#0a274d);
+      border:1px solid rgba(126,190,255,.3);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.18);
+    }
+    .app-icon svg{width:38px;height:38px;filter:drop-shadow(0 3px 8px rgba(46,206,255,.18))}
+    .title-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    h1{font-size:35px;line-height:1.05;margin:4px 0 8px;letter-spacing:-.7px;overflow-wrap:anywhere}
+    .subtitle{margin:0;color:#d1e2f7;font-size:17px}
+    .project-status{
+      padding:6px 12px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap;
+      background:#0e70d9;border:1px solid #3098ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)
+    }
+    .project-status.completed{background:#0b8a57;border-color:#1fc47f}
+    .project-status.not-started{background:#3a4d69;border-color:#5f7596}
+    .actions{text-align:right;flex:none}
+    .refresh{
+      border:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer;
+      background:linear-gradient(180deg,#2f9dff,#1677ff);
+      padding:11px 18px;border-radius:12px;font-weight:800;
+      display:inline-flex;align-items:center;gap:9px;
+      box-shadow:0 8px 22px rgba(22,119,255,.25)
+    }
+    .refresh:hover{transform:translateY(-1px)}
+    .refresh:disabled{opacity:.75;cursor:progress;transform:none}
+    .refresh svg{width:18px;height:18px}
+    .refresh.spinning svg{animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .updated{
+      margin-top:11px;color:#bdcee3;font-size:13px;
+      display:flex;align-items:center;justify-content:flex-end;gap:7px
+    }
+    .updated svg{width:16px;height:16px}
+    .project-progress{
+      max-width:1500px;margin:0 auto;
+      border:1px solid rgba(102,179,255,.45);
+      background:linear-gradient(90deg,rgba(18,57,97,.88),rgba(15,65,111,.62));
+      border-radius:14px;padding:16px 20px;
+      display:grid;grid-template-columns:auto auto minmax(220px,1fr) auto;
+      align-items:center;gap:18px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .big-percent{font-size:40px;font-weight:900;letter-spacing:-1px}
+    .project-progress-copy strong{display:block;font-size:17px}
+    .project-progress-copy span{display:block;margin-top:2px;color:#c7d7ea;font-size:14px}
+    .bar{
+      height:13px;border-radius:999px;background:#6f86a2;
+      overflow:hidden;box-shadow:inset 0 1px 3px rgba(1,11,22,.25)
+    }
+    .bar>i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2de19b,#1fd0b5);box-shadow:0 0 18px rgba(33,222,167,.32);transition:width .35s ease}
+    .bar.blue>i{background:linear-gradient(90deg,#1577ff,#41a7ff);box-shadow:none}
+    .bar.green>i{background:linear-gradient(90deg,#11b86f,#20d182);box-shadow:none}
+    .state{
+      display:inline-flex;align-items:center;gap:8px;
+      min-width:124px;justify-content:center;
+      padding:7px 12px;border-radius:999px;font-weight:800;font-size:13px;
+      border:1px solid transparent;white-space:nowrap
+    }
+    .state:before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+    .state.completed{color:#05814f;background:var(--green-100)}
+    .state.in-progress{color:#086ce8;background:var(--blue-100)}
+    .state.not-started{color:#62708a;background:#edf1f6}
+    .state.hero-state{color:#8cc7ff;background:rgba(22,119,255,.18);border-color:#2f7fd6}
+    .state.hero-state.completed{color:#66f0b0;background:rgba(11,128,85,.18);border-color:#11936c}
+    .state.hero-state.not-started{color:#c3cfdf;background:rgba(131,145,169,.16);border-color:#5f7596}
+    .notice{
+      max-width:1540px;margin:0 auto 14px;padding:13px 18px;border-radius:14px;
+      background:#fff4e5;border:1px solid #f5c98a;color:#7a4a05;font-size:14px;line-height:1.45
+    }
+    .notice code{background:rgba(122,74,5,.08);padding:1px 6px;border-radius:6px;font-size:13px}
+    .board-wrap{padding:18px 0 34px}
+    .board{
+      max-width:1540px;margin:0 auto;
+      background:rgba(255,255,255,.94);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(202,214,230,.86);
+      overflow:hidden;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:minmax(0,1.65fr) minmax(250px,.78fr) minmax(190px,.6fr);
+      align-items:center
+    }
+    .header-row{
+      color:#425577;font-weight:800;background:#f7faff;
+      border-bottom:1px solid #cbd8e8
+    }
+    .header-row>div{padding:12px 20px}
+    .header-row>div+div{border-left:1px solid #d3deeb}
+    .row{
+      min-height:58px;
+      border-bottom:1px solid #dce5ef;
+      background:#fff;
+      transition:background .16s ease,box-shadow .16s ease;
+    }
+    .row:last-child{border-bottom:0}
+    .row:hover{background:#fbfdff}
+    .row.goal-row{
+      min-height:68px;
+      background:linear-gradient(90deg,#fbfdff,#f5faff);
+      box-shadow:inset 0 1px 0 #d8e7f7
+    }
+    .row.stage-row{min-height:60px;background:#fff}
+    .row.milestone-row{min-height:43px}
+    .row>div{padding:8px 20px}
+    .row>div+div{border-left:1px solid #d7e2ef;align-self:stretch;display:flex;align-items:center}
+    .row.clickable .item-cell{cursor:pointer}
+    .item-cell{display:flex;align-items:center;gap:12px;min-width:0}
+    .toggle{
+      width:24px;height:24px;flex:none;border:0;background:transparent;
+      color:#335a8d;cursor:pointer;display:grid;place-items:center;padding:0;border-radius:6px
+    }
+    .toggle:hover{background:#edf5ff}
+    .toggle:focus-visible{outline:2px solid var(--blue-600);outline-offset:1px}
+    .toggle svg{width:18px;height:18px;transition:transform .17s ease}
+    .toggle[aria-expanded="true"] svg{transform:rotate(90deg)}
+    .toggle.placeholder{visibility:hidden}
+    .symbol{width:38px;height:38px;display:grid;place-items:center;flex:none}
+    .symbol svg{width:34px;height:34px}
+    .milestone-row .symbol{width:26px;height:26px}
+    .milestone-row .symbol svg{width:25px;height:25px}
+    .item-label{min-width:0}
+    .item-title{font-weight:850;font-size:17px;line-height:1.15;overflow-wrap:anywhere}
+    .stage-row .item-title{font-size:16px}
+    .milestone-row .item-title{font-size:15px;font-weight:600}
+    .item-desc{font-size:13.5px;color:#4b5d7c;margin-top:3px;line-height:1.35}
+    .item-meta{font-size:13px;color:#43618e;margin-top:3px}
+    .indent-stage{padding-left:47px!important}
+    .indent-mile{padding-left:94px!important;position:relative}
+    .indent-mile:before{
+      content:"";position:absolute;left:70px;top:0;bottom:0;border-left:1px dashed #b8d1ee
+    }
+    .details-row{
+      padding:2px 20px 12px 170px;position:relative;
+      border-bottom:1px solid #dce5ef;background:#fff;
+      font-size:13.5px;color:#415273;line-height:1.5
+    }
+    .details-row:before{
+      content:"";position:absolute;left:70px;top:0;bottom:0;border-left:1px dashed #b8d1ee
+    }
+    .details-row p{margin:0 0 4px}
+    .details-row strong{color:#10203d;font-weight:750}
+    .progress-cell{gap:15px}
+    .progress-number{font-weight:850;min-width:44px}
+    .progress-cell .bar{flex:1;background:#dce4ee;height:12px}
+    .status-cell{justify-content:flex-start}
+    .hidden{display:none!important}
+    .empty{padding:46px;text-align:center;color:#61718b}
+    @media (max-width:850px){
+      .hero{padding:18px 14px}
+      .hero-top{align-items:center}
+      h1{font-size:27px}
+      .subtitle{font-size:14px}
+      .app-icon{width:50px;height:50px}
+      .updated{display:none}
+      .project-progress{grid-template-columns:auto 1fr;gap:10px}
+      .project-progress .bar{grid-column:1/-1}
+      .project-progress .hero-state{display:none}
+      .board-wrap{padding:12px}
+      .notice{margin:0 0 12px}
+      .board{border-radius:16px}
+      .grid{grid-template-columns:minmax(0,1fr) 135px}
+      .header-row>div:nth-child(3),.row>div:nth-child(3){display:none}
+      .row>div{padding:8px 12px}
+      .indent-stage{padding-left:31px!important}
+      .indent-mile{padding-left:58px!important}
+      .indent-mile:before,.details-row:before{left:43px}
+      .details-row{padding:2px 12px 12px 100px}
+      .symbol{width:31px;height:31px}
+      .symbol svg{width:29px;height:29px}
+      .item-meta,.item-desc{font-size:12px}
+      .item-title{font-size:15px}
+      .progress-cell{gap:6px}
+      .progress-number{min-width:36px}
+    }
+    @media (max-width:560px){
+      .refresh{padding:10px 12px}
+      .refresh span{display:none}
+      .project-progress-copy span{display:none}
+      .project-progress{grid-template-columns:auto 1fr}
+      .big-percent{font-size:34px}
+      .grid{grid-template-columns:1fr}
+      .row .progress-cell{border-left:0;padding-top:0;padding-left:66px}
+      .goal-row .progress-cell{padding-left:62px}
+      .stage-row .progress-cell{padding-left:78px}
+      .milestone-row .progress-cell{padding-left:58px}
+      .details-row{padding-left:70px}
+      .header-row{display:none}
+      .row{padding:4px 0}
+    }
+    @media (prefers-reduced-motion:reduce){
+      *{transition:none!important;animation:none!important}
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="hero">
+    <div class="hero-top">
+      <div class="brand">
+        <div class="app-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M24 5 39 13 24 21 9 13 24 5Z" fill="#71DBFF"/>
+            <path d="M9 20 24 28 39 20" stroke="#69CFF2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 28 24 36 39 28" stroke="#8F6CFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="title-line">
+            <h1 id="projectName">Loading…</h1>
+            <span id="projectStateTop" class="project-status hidden"></span>
+          </div>
+          <p id="projectSubtitle" class="subtitle"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="refreshBtn" class="refresh" type="button" title="Reload project status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6v5h-5"/><path d="M4 18v-5h5"/><path d="M6.1 9A7 7 0 0 1 18.7 6.7L20 11"/><path d="M17.9 15A7 7 0 0 1 5.3 17.3L4 13"/>
+          </svg>
+          <span>Refresh</span>
+        </button>
+        <div class="updated">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span id="updatedAt">Last updated: —</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-progress">
+      <div class="big-percent" id="overallPercent">0%</div>
+      <div class="project-progress-copy">
+        <strong>Overall Project Progress</strong>
+        <span id="overallCopy">—</span>
+      </div>
+      <div class="bar" role="progressbar" aria-label="Overall project progress" aria-valuemin="0" aria-valuemax="100" id="overallBarWrap"><i id="overallBar" style="width:0%"></i></div>
+      <span id="overallState" class="state hero-state not-started">Not Started</span>
+    </div>
+  </header>
+
+  <main class="board-wrap">
+    <div id="notice" class="notice hidden" role="alert"></div>
+    <section class="board">
+      <div class="header-row grid">
+        <div>Item</div>
+        <div class="progress-head">Progress</div>
+        <div>Status</div>
+      </div>
+      <div id="rows"></div>
+      <div id="emptyState" class="empty hidden">No goals are configured yet.</div>
+    </section>
+  </main>
+</div>
+
+<script>
+/*
+  DATA
+    Loads ./project-status.json (or ?data=<url>) and re-reads it on Refresh.
+    Set project.autoRefreshSeconds > 0 in the JSON to poll automatically.
+
+  PROGRESS (calculated here; only milestones store progress)
+    Stage   = average of its milestones
+    Goal    = average of all milestones in the goal
+    Project = average of all milestones in the project
+
+  STATUS
+    0% = Not Started · 1–99% = In Progress · 100% = Completed
+    "Completed" requires every milestone underneath to be at 100.
+
+  EXPAND/COLLAPSE
+    Default: in-progress goals and their active stage open, everything else
+    closed. An explicit "expanded": true/false in the JSON overrides the
+    default; a viewer's own clicks override both (kept for the tab session).
+*/
+const DATA_URL = new URLSearchParams(location.search).get("data") || "project-status.json";
+const STORE_KEY = "psb-expanded:" + location.pathname + ":" + DATA_URL;
+
+let PROJECT_DATA = null;
+let autoRefreshTimer = null;
+let autoRefreshSeconds = 0;
+let userExpanded = loadUserExpanded();
+
+const $ = sel => document.querySelector(sel);
+const clamp = n => Math.max(0, Math.min(100, Number(n) || 0));
+const average = nums => nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : 0;
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+}[c]));
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const list = v => Array.isArray(v) ? v : [];
+
+/* Display value never claims 100% or 0% unless it is exactly that. */
+function displayPercent(p){
+  const n = clamp(p);
+  if(n > 0 && n < 1) return 1;
+  if(n > 99 && n < 100) return 99;
+  return Math.round(n);
+}
+function statusFromProgress(p){
+  const n = clamp(p);
+  if(n >= 100) return {label:"Completed", cls:"completed"};
+  if(n <= 0) return {label:"Not Started", cls:"not-started"};
+  return {label:"In Progress", cls:"in-progress"};
+}
+function stageMilestones(stage){ return list(stage.milestones); }
+function goalMilestones(goal){ return list(goal.stages).flatMap(stageMilestones); }
+function stageProgress(stage){ return average(stageMilestones(stage).map(m => clamp(m.progress))); }
+function goalProgress(goal){ return average(goalMilestones(goal).map(m => clamp(m.progress))); }
+function projectProgress(data){ return average(list(data.goals).flatMap(goalMilestones).map(m => clamp(m.progress))); }
+const isDone = m => clamp(m.progress) >= 100;
+
+/* ---------- expand/collapse state ---------- */
+function loadUserExpanded(){
+  try{ return JSON.parse(sessionStorage.getItem(STORE_KEY)) || {}; }catch{ return {}; }
+}
+function saveUserExpanded(){
+  try{ sessionStorage.setItem(STORE_KEY, JSON.stringify(userExpanded)); }catch{}
+}
+/* Compute which goals/stages are open by default, before viewer clicks. */
+function defaultExpansion(data){
+  const open = {};
+  const goals = list(data.goals);
+  const overall = projectProgress(data);
+  let activeGoals = goals.filter(g => statusFromProgress(goalProgress(g)).cls === "in-progress");
+  if(!activeGoals.length && overall > 0 && overall < 100){
+    const next = goals.find(g => goalProgress(g) < 100);
+    if(next) activeGoals = [next];
+  }
+  for(const goal of goals){
+    open[goal.id] = activeGoals.includes(goal);
+    const stages = list(goal.stages);
+    let activeStages = stages.filter(s => statusFromProgress(stageProgress(s)).cls === "in-progress");
+    if(!activeStages.length && open[goal.id]){
+      const next = stages.find(s => stageProgress(s) < 100);
+      if(next) activeStages = [next];
+    }
+    for(const stage of stages) open[stage.id] = activeGoals.includes(goal) && activeStages.includes(stage);
+  }
+  return open;
+}
+let defaults = {};
+function isExpanded(item){
+  const id = String(item.id);
+  if(Object.prototype.hasOwnProperty.call(userExpanded, id)) return userExpanded[id];
+  if(typeof item.expanded === "boolean") return item.expanded;
+  return !!defaults[id];
+}
+
+/* ---------- icons (inline SVG, no network) ---------- */
+function iconChevron(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>`;
+}
+function iconGoal(){
+  return `<svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+    <circle cx="20" cy="20" r="15" stroke="#ff7b00" stroke-width="4"/>
+    <circle cx="20" cy="20" r="8" stroke="#ff7b00" stroke-width="4"/>
+    <path d="M27 13 34 6M29 6h5v5" stroke="#ff7b00" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function iconStage(status){
+  if(status.cls === "completed"){
+    return `<svg viewBox="0 0 34 34" fill="none" aria-hidden="true"><circle cx="17" cy="17" r="14" fill="#16b86f"/><path d="m10 17 4.5 4.5L24 12" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  if(status.cls === "in-progress"){
+    return `<svg viewBox="0 0 34 34" fill="none" aria-hidden="true"><circle cx="17" cy="17" r="13" stroke="#278bff" stroke-width="4"/><path d="M17 4a13 13 0 0 1 11.2 6.4" stroke="#7fc3ff" stroke-width="4" stroke-linecap="round"/></svg>`;
+  }
+  return `<svg viewBox="0 0 34 34" fill="none" aria-hidden="true">
+    <path d="m17 6 10 5-10 5L7 11l10-5Z" fill="#7d8daa"/>
+    <path d="m7 16 10 5 10-5M7 21l10 5 10-5" stroke="#7d8daa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function iconMilestone(status){
+  if(status.cls === "completed"){
+    return `<svg viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="15" cy="15" r="13" fill="#12b86d"/><path d="m9 15 4 4 8-9" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  if(status.cls === "in-progress"){
+    return `<svg viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="15" cy="15" r="12" stroke="#278bff" stroke-width="4"/><path d="M15 3a12 12 0 0 1 10.6 6.4" stroke="#8bcbff" stroke-width="4" stroke-linecap="round"/></svg>`;
+  }
+  return `<svg viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="15" cy="15" r="11" stroke="#7d8daa" stroke-width="4"/></svg>`;
+}
+
+/* ---------- rendering ---------- */
+function progressBar(p, status){
+  const n = displayPercent(p);
+  const cls = status.cls === "completed" ? "green" : status.cls === "in-progress" ? "blue" : "";
+  return `<span class="progress-number">${n}%</span><span class="bar ${cls}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${n}"><i style="width:${n}%"></i></span>`;
+}
+function rowHtml({kind, id, title, desc, meta, progress, expanded, hasChildren, hidden}){
+  const s = statusFromProgress(progress);
+  const classes = ["row","grid",`${kind}-row`];
+  if(kind === "stage") classes.push("indent-stage");
+  if(kind === "milestone") classes.push("indent-mile");
+  if(hasChildren) classes.push("clickable");
+  if(hidden) classes.push("hidden");
+
+  const icon = kind === "goal" ? iconGoal() : kind === "stage" ? iconStage(s) : iconMilestone(s);
+  const toggle = hasChildren
+    ? `<button class="toggle" type="button" aria-label="${expanded ? "Collapse" : "Expand"} ${esc(title)}" aria-expanded="${!!expanded}" data-toggle="${esc(id)}">${iconChevron()}</button>`
+    : `<span class="toggle placeholder" aria-hidden="true">${iconChevron()}</span>`;
+
+  return `
+    <div class="${classes.join(" ")}" data-kind="${kind}" data-id="${esc(id)}">
+      <div class="item-cell">
+        ${toggle}
+        <span class="symbol">${icon}</span>
+        <div class="item-label">
+          <div class="item-title">${esc(title)}</div>
+          ${desc ? `<div class="item-desc">${esc(desc)}</div>` : ""}
+          ${meta ? `<div class="item-meta">${esc(meta)}</div>` : ""}
+        </div>
+      </div>
+      <div class="progress-cell">${progressBar(progress, s)}</div>
+      <div class="status-cell"><span class="state ${s.cls}">${s.label}</span></div>
+    </div>`;
+}
+function detailsHtml(m, hidden){
+  const parts = [];
+  if(m.description) parts.push(`<p>${esc(m.description)}</p>`);
+  if(m.evidence) parts.push(`<p><strong>Evidence:</strong> ${esc(m.evidence)}</p>`);
+  return `<div class="details-row${hidden ? " hidden" : ""}" data-details-for="${esc(m.id)}">${parts.join("")}</div>`;
+}
+
+function render(){
+  const data = PROJECT_DATA || {};
+  const project = data.project || {};
+  const goals = list(data.goals);
+  defaults = defaultExpansion(data);
+
+  const name = project.name || "Untitled Project";
+  $("#projectName").textContent = name;
+  document.title = `${name} · Project Status`;
+  $("#projectSubtitle").textContent = project.subtitle || "";
+
+  const pp = projectProgress(data);
+  const ps = statusFromProgress(pp);
+  const all = goals.flatMap(goalMilestones);
+  const done = all.filter(isDone).length;
+
+  $("#overallPercent").textContent = `${displayPercent(pp)}%`;
+  $("#overallBar").style.width = `${displayPercent(pp)}%`;
+  $("#overallBarWrap").setAttribute("aria-valuenow", displayPercent(pp));
+  $("#overallCopy").textContent = `${done} of ${plural(all.length, "milestone")} completed`;
+  for(const el of [$("#overallState"), $("#projectStateTop")]){
+    el.textContent = ps.label;
+    el.classList.remove("completed","in-progress","not-started","hidden");
+    el.classList.add(ps.cls);
+  }
+
+  const d = project.updatedAt ? new Date(project.updatedAt) : null;
+  $("#updatedAt").textContent = "Last updated: " + (!d ? "—" : isNaN(d) ? project.updatedAt : d.toLocaleString());
+
+  $("#emptyState").classList.toggle("hidden", goals.length > 0);
+
+  let rows = "";
+  for(const goal of goals){
+    const stages = list(goal.stages);
+    const gms = goalMilestones(goal);
+    const stagesDone = stages.filter(s => stageMilestones(s).length && stageMilestones(s).every(isDone)).length;
+    const goalOpen = isExpanded(goal);
+    rows += rowHtml({
+      kind:"goal", id:goal.id, title:goal.name, desc:goal.description,
+      meta:`${stagesDone} of ${plural(stages.length, "stage")} · ${gms.filter(isDone).length} of ${plural(gms.length, "milestone")} completed`,
+      progress:goalProgress(goal), expanded:goalOpen, hasChildren:stages.length > 0
+    });
+
+    for(const stage of stages){
+      const ms = stageMilestones(stage);
+      const stageOpen = isExpanded(stage);
+      rows += rowHtml({
+        kind:"stage", id:stage.id, title:stage.name, desc:stage.description,
+        meta:`${ms.filter(isDone).length} of ${plural(ms.length, "milestone")} completed`,
+        progress:stageProgress(stage), expanded:stageOpen, hasChildren:ms.length > 0,
+        hidden:!goalOpen
+      });
+
+      for(const m of ms){
+        const hasDetails = !!(m.description || m.evidence);
+        const mOpen = hasDetails && !!userExpanded[String(m.id)];
+        rows += rowHtml({
+          kind:"milestone", id:m.id, title:m.name,
+          progress:clamp(m.progress), expanded:mOpen, hasChildren:hasDetails,
+          hidden:!(goalOpen && stageOpen)
+        });
+        if(hasDetails) rows += detailsHtml(m, !(goalOpen && stageOpen && mOpen));
+      }
+    }
+  }
+  $("#rows").innerHTML = rows;
+}
+
+function toggle(id){
+  const item = findItem(id);
+  if(!item) return;
+  const isMilestone = !Array.isArray(item.stages) && !Array.isArray(item.milestones);
+  const current = isMilestone ? !!userExpanded[id] : isExpanded(item);
+  userExpanded[id] = !current;
+  saveUserExpanded();
+  render();
+  const btn = document.querySelector(`[data-toggle="${CSS.escape(id)}"]`);
+  if(btn) btn.focus({preventScroll:true});
+}
+function findItem(id){
+  for(const g of list(PROJECT_DATA?.goals)){
+    if(String(g.id) === id) return g;
+    for(const s of list(g.stages)){
+      if(String(s.id) === id) return s;
+      for(const m of list(s.milestones)) if(String(m.id) === id) return m;
+    }
+  }
+  return null;
+}
+document.addEventListener("click", e => {
+  const btn = e.target.closest("[data-toggle]");
+  if(btn){ toggle(btn.dataset.toggle); return; }
+  const cell = e.target.closest(".row.clickable .item-cell");
+  if(cell) toggle(cell.parentElement.dataset.id);
+});
+
+/* ---------- loading & refresh ---------- */
+function showNotice(html){
+  const n = $("#notice");
+  n.innerHTML = html;
+  n.classList.toggle("hidden", !html);
+}
+function loadHelp(err){
+  const serve = `<code>python3 -m http.server 8765 --bind 127.0.0.1</code>`;
+  if(location.protocol === "file:"){
+    return `Browsers block reading <code>${esc(DATA_URL)}</code> from a file:// page. From this folder, run ${serve} and open <code>http://127.0.0.1:8765/</code>.`;
+  }
+  return `Could not load <code>${esc(DATA_URL)}</code>: ${esc(err.message)}.` +
+    (PROJECT_DATA ? " Showing the last good data." : "") +
+    ` Check the JSON with <code>validate_status.py</code>, then press Refresh.`;
+}
+async function loadData(){
+  const url = new URL(DATA_URL, location.href);
+  url.searchParams.set("_ts", Date.now());
+  const res = await fetch(url, {cache:"no-store"});
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  let data;
+  try{ data = JSON.parse(await res.text()); }
+  catch(e){ throw new Error(`invalid JSON (${e.message})`); }
+  if(!data || typeof data !== "object" || !Array.isArray(data.goals)){
+    throw new Error(`expected an object with a "goals" array`);
+  }
+  PROJECT_DATA = data;
+  showNotice("");
+  render();
+  setupAutoRefresh();
+}
+async function refresh(){
+  const btn = $("#refreshBtn");
+  btn.disabled = true;
+  btn.classList.add("spinning");
+  try{ await loadData(); }
+  catch(err){
+    console.error(err);
+    showNotice(loadHelp(err));
+    if(!PROJECT_DATA) $("#projectName").textContent = "Project Status";
+  }finally{
+    btn.disabled = false;
+    btn.classList.remove("spinning");
+  }
+}
+function setupAutoRefresh(){
+  const sec = Math.max(0, Number(PROJECT_DATA?.project?.autoRefreshSeconds) || 0);
+  if(sec === autoRefreshSeconds && (autoRefreshTimer || !sec)) return;
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = null;
+  autoRefreshSeconds = sec;
+  if(sec > 0) autoRefreshTimer = setInterval(() => { if(!document.hidden) refresh(); }, Math.max(5, sec) * 1000);
+}
+$("#refreshBtn").addEventListener("click", refresh);
+refresh();
+</script>
+</body>
+</html>

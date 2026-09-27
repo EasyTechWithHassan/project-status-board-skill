@@ -1,0 +1,10 @@
+{
+  "name": "project-status-board",
+  "version": "1.0.0",
+  "description": "Visual Goals > Stages > Milestones dashboard for long-running AI-assisted projects, kept in sync by the agent.",
+  "author": { "name": "EasyTechWithHassan" },
+  "homepage": "https://github.com/EasyTechWithHassan/project-status-board-skill",
+  "repository": "https://github.com/EasyTechWithHassan/project-status-board-skill",
+  "license": "MIT",
+  "keywords": ["project-management", "dashboard", "status", "milestones", "agent-skills"]
+}

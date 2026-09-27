@@ -1,0 +1,15 @@
+{
+  "name": "project-status-board-skill",
+  "owner": { "name": "EasyTechWithHassan" },
+  "metadata": {
+    "description": "The project-status-board Agent Skill packaged as a Claude Code plugin."
+  },
+  "plugins": [
+    {
+      "name": "project-status-board",
+      "source": "./",
+      "description": "Visual Goals > Stages > Milestones dashboard for long-running AI-assisted projects, kept in sync by the agent.",
+      "version": "1.0.0"
+    }
+  ]
+}
