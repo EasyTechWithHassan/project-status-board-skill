@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Project Status Board</title>
+  <style>
+    :root{
+      --navy-950:#061a33;
+      --navy-900:#082445;
+      --navy-850:#0a2d57;
+      --blue-600:#1677ff;
+      --blue-500:#2f8fff;
+      --blue-100:#dcecff;
+      --green-600:#08a665;
+      --green-500:#14c77a;
+      --green-100:#d7f6e7;
+      --gray-900:#10203d;
+      --gray-700:#415273;
+      --gray-600:#5c6e8e;
+      --gray-500:#8391a9;
+      --gray-300:#cfd8e6;
+      --gray-200:#e6edf6;
+      --gray-100:#f5f8fc;
+      --white:#ffffff;
+      --orange:#ff7b00;
+      --purple:#7c3cff;
+      --shadow:0 18px 45px rgba(17,47,89,.13);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--gray-900);
+      background:
+        radial-gradient(circle at 10% 10%,rgba(43,143,255,.12),transparent 24%),
+        linear-gradient(180deg,#f5f9ff 0,#eef5fc 100%);
+    }
+    button{font:inherit}
+    .shell{min-height:100vh}
+    .hero{
+      color:#fff;
+      background:
+        radial-gradient(900px 280px at 62% -15%,rgba(39,127,255,.32),transparent 65%),
+        linear-gradient(135deg,var(--navy-900),var(--navy-950));
+      padding:22px 28px 20px;
+      box-shadow:0 8px 26px rgba(4,24,49,.2);
+    }
+    .hero-top{
+      max-width:1500px;margin:0 auto 18px;
+      display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+    }
+    .brand{display:flex;align-items:flex-start;gap:16px;min-width:0}
+    .app-icon{
+      width:62px;height:62px;border-radius:15px;
+      display:grid;place-items:center;flex:none;
+      background:linear-gradient(145deg,#153d70,#0a274d);
+      border:1px solid rgba(126,190,255,.3);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.18);
+    }
+    .app-icon svg{width:38px;height:38px;filter:drop-shadow(0 3px 8px rgba(46,206,255,.18))}
+    .title-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    h1{font-size:35px;line-height:1.05;margin:4px 0 8px;letter-spacing:-.7px}
+    .subtitle{margin:0;color:#d1e2f7;font-size:17px}
+    .project-status{
+      padding:6px 12px;border-radius:999px;font-weight:800;font-size:13px;
+      background:#0e70d9;border:1px solid #3098ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)
+    }
+    .actions{text-align:right;flex:none}
+    .refresh{
+      border:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer;
+      background:linear-gradient(180deg,#2f9dff,#1677ff);
+      padding:11px 18px;border-radius:12px;font-weight:800;
+      display:inline-flex;align-items:center;gap:9px;
+      box-shadow:0 8px 22px rgba(22,119,255,.25)
+    }
+    .refresh:hover{transform:translateY(-1px)}
+    .refresh svg{width:18px;height:18px}
+    .updated{
+      margin-top:11px;color:#bdcee3;font-size:13px;
+      display:flex;align-items:center;justify-content:flex-end;gap:7px
+    }
+    .updated svg{width:16px;height:16px}
+    .project-progress{
+      max-width:1500px;margin:0 auto;
+      border:1px solid rgba(102,179,255,.45);
+      background:linear-gradient(90deg,rgba(18,57,97,.88),rgba(15,65,111,.62));
+      border-radius:14px;padding:16px 20px;
+      display:grid;grid-template-columns:auto auto minmax(220px,1fr) auto;
+      align-items:center;gap:18px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .big-percent{font-size:40px;font-weight:900;letter-spacing:-1px}
+    .project-progress-copy strong{display:block;font-size:17px}
+    .project-progress-copy span{display:block;margin-top:2px;color:#c7d7ea;font-size:14px}
+    .bar{
+      height:13px;border-radius:999px;background:#6f86a2;
+      overflow:hidden;box-shadow:inset 0 1px 3px rgba(1,11,22,.25)
+    }
+    .bar>i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2de19b,#1fd0b5);box-shadow:0 0 18px rgba(33,222,167,.32)}
+    .bar.blue>i{background:linear-gradient(90deg,#1577ff,#41a7ff);box-shadow:none}
+    .bar.green>i{background:linear-gradient(90deg,#11b86f,#20d182);box-shadow:none}
+    .state{
+      display:inline-flex;align-items:center;gap:8px;
+      min-width:124px;justify-content:center;
+      padding:7px 12px;border-radius:999px;font-weight:800;font-size:13px;
+      border:1px solid transparent;white-space:nowrap
+    }
+    .state:before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+    .state.completed{color:#05814f;background:var(--green-100)}
+    .state.in-progress{color:#086ce8;background:var(--blue-100)}
+    .state.not-started{color:#62708a;background:#edf1f6}
+    .state.hero-state{color:#66f0b0;background:rgba(11,128,85,.18);border-color:#11936c}
+    .board-wrap{padding:18px 0 34px}
+    .board{
+      max-width:1540px;margin:0 auto;
+      background:rgba(255,255,255,.94);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(202,214,230,.86);
+      overflow:hidden;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:minmax(0,1.65fr) minmax(250px,.78fr) minmax(190px,.6fr);
+      align-items:center
+    }
+    .header-row{
+      color:#425577;font-weight:800;background:#f7faff;
+      border-bottom:1px solid #cbd8e8
+    }
+    .header-row>div{padding:12px 20px}
+    .header-row>div+div{border-left:1px solid #d3deeb}
+    .row{
+      min-height:58px;
+      border-bottom:1px solid #dce5ef;
+      background:#fff;
+      transition:background .16s ease,box-shadow .16s ease;
+    }
+    .row:hover{background:#fbfdff}
+    .row.goal-row{
+      min-height:68px;
+      background:linear-gradient(90deg,#fbfdff,#f5faff);
+      box-shadow:inset 0 1px 0 #d8e7f7
+    }
+    .row.stage-row{min-height:60px;background:#fff}
+    .row.milestone-row{min-height:43px}
+    .row>div{padding:8px 20px}
+    .row>div+div{border-left:1px solid #d7e2ef;align-self:stretch;display:flex;align-items:center}
+    .item-cell{display:flex;align-items:center;gap:12px;min-width:0}
+    .toggle{
+      width:24px;height:24px;flex:none;border:0;background:transparent;
+      color:#335a8d;cursor:pointer;display:grid;place-items:center;padding:0;border-radius:6px
+    }
+    .toggle:hover{background:#edf5ff}
+    .toggle svg{width:18px;height:18px;transition:transform .17s ease}
+    .toggle[aria-expanded="true"] svg{transform:rotate(90deg)}
+    .toggle.placeholder{visibility:hidden}
+    .symbol{width:38px;height:38px;display:grid;place-items:center;flex:none}
+    .symbol svg{width:34px;height:34px}
+    .milestone-row .symbol{width:26px;height:26px}
+    .milestone-row .symbol svg{width:25px;height:25px}
+    .item-label{min-width:0}
+    .item-title{font-weight:850;font-size:17px;line-height:1.1}
+    .stage-row .item-title{font-size:16px}
+    .milestone-row .item-title{font-size:15px;font-weight:600}
+    .item-meta{font-size:13px;color:#43618e;margin-top:3px}
+    .indent-stage{padding-left:47px!important}
+    .indent-mile{padding-left:94px!important;position:relative}
+    .indent-mile:before{
+      content:"";position:absolute;left:70px;top:0;bottom:0;border-left:1px dashed #b8d1ee
+    }
+    .progress-cell{gap:15px}
+    .progress-number{font-weight:850;min-width:44px}
+    .progress-cell .bar{flex:1;background:#dce4ee;height:12px}
+    .status-cell{justify-content:flex-start}
+    .hidden{display:none!important}
+    .empty{
+      padding:46px;text-align:center;color:#61718b
+    }
+    @media (max-width:850px){
+      .hero{padding:18px 14px}
+      .hero-top{align-items:center}
+      h1{font-size:27px}
+      .subtitle{font-size:14px}
+      .app-icon{width:50px;height:50px}
+      .updated{display:none}
+      .project-progress{grid-template-columns:auto 1fr;gap:10px}
+      .project-progress .bar{grid-column:1/-1}
+      .project-progress .hero-state{display:none}
+      .board-wrap{padding:12px}
+      .board{border-radius:16px}
+      .grid{grid-template-columns:minmax(0,1fr) 135px}
+      .header-row>div:nth-child(3),.row>div:nth-child(3){display:none}
+      .row>div{padding:8px 12px}
+      .indent-stage{padding-left:31px!important}
+      .indent-mile{padding-left:58px!important}
+      .indent-mile:before{left:43px}
+      .symbol{width:31px;height:31px}
+      .symbol svg{width:29px;height:29px}
+      .item-meta{font-size:12px}
+      .item-title{font-size:15px}
+      .progress-cell{gap:6px}
+      .progress-number{min-width:36px}
+    }
+    @media (max-width:560px){
+      .refresh{padding:10px 12px}
+      .refresh span{display:none}
+      .project-progress-copy span{display:none}
+      .project-progress{grid-template-columns:auto 1fr}
+      .big-percent{font-size:34px}
+      .header-row .progress-head{display:none}
+      .grid{grid-template-columns:1fr}
+      .row .progress-cell{border-left:0;padding-top:0;padding-left:66px}
+      .goal-row .progress-cell{padding-left:62px}
+      .stage-row .progress-cell{padding-left:78px}
+      .milestone-row .progress-cell{padding-left:58px}
+      .header-row{display:none}
+      .row{padding:4px 0}
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="hero">
+    <div class="hero-top">
+      <div class="brand">
+        <div class="app-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M24 5 39 13 24 21 9 13 24 5Z" fill="#71DBFF"/>
+            <path d="M9 20 24 28 39 20" stroke="#69CFF2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 28 24 36 39 28" stroke="#8F6CFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="title-line">
+            <h1 id="projectName">Project Alpha</h1>
+            <span id="projectStateTop" class="project-status">In Progress</span>
+          </div>
+          <p id="projectSubtitle" class="subtitle">Building an amazing product, one milestone at a time.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="refreshBtn" class="refresh" type="button" title="Reload project status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6v5h-5"/><path d="M4 18v-5h5"/><path d="M6.1 9A7 7 0 0 1 18.7 6.7L20 11"/><path d="M17.9 15A7 7 0 0 1 5.3 17.3L4 13"/>
+          </svg>
+          <span>Refresh</span>
+        </button>
+        <div class="updated">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span id="updatedAt">Last updated: —</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-progress">
+      <div class="big-percent" id="overallPercent">0%</div>
+      <div class="project-progress-copy">
+        <strong>Overall Project Progress</strong>
+        <span id="overallCopy">0 milestones completed</span>
+      </div>
+      <div class="bar"><i id="overallBar" style="width:0%"></i></div>
+      <span id="overallState" class="state hero-state">In Progress</span>
+    </div>
+  </header>
+
+  <main class="board-wrap">
+    <section class="board">
+      <div class="header-row grid">
+        <div>Item</div>
+        <div class="progress-head">Progress</div>
+        <div>Status</div>
+      </div>
+      <div id="rows"></div>
+      <div id="emptyState" class="empty hidden">No goals are configured yet.</div>
+    </section>
+  </main>
+</div>
+
+<script>
+/*
+  PARAMETERIZATION OPTIONS
+  ------------------------
+  1) Default: edit EMBEDDED_PROJECT_DATA below.
+  2) External JSON: open this page as:
+       project-status-board.html?data=project-status.json
+     Then Claude Code only needs to update project-status.json.
+
+  Progress is calculated automatically:
+  - Milestone: uses milestone.progress (0-100)
+  - Stage: average of its milestone progress values
+  - Goal: average of all milestones inside the goal
+  - Project: average of all milestones across all goals
+
+  Status is automatic:
+  0% = Not Started
+  100% = Completed
+  1-99% = In Progress
+*/
+const EMBEDDED_PROJECT_DATA = {"project":{"name":"Project Alpha","subtitle":"Building an amazing product, one milestone at a time.","updatedAt":"2026-09-26T16:48:00-07:00","autoRefreshSeconds":0},"goals":[{"id":"goal-1","name":"Goal 1","expanded":true,"stages":[{"id":"g1-s1","name":"Stage 1","expanded":true,"milestones":[{"id":"g1-s1-m1","name":"Milestone 1","progress":100},{"id":"g1-s1-m2","name":"Milestone 2","progress":100},{"id":"g1-s1-m3","name":"Milestone 3","progress":100},{"id":"g1-s1-m4","name":"Milestone 4","progress":100},{"id":"g1-s1-m5","name":"Milestone 5","progress":100}]},{"id":"g1-s2","name":"Stage 2","expanded":true,"milestones":[{"id":"g1-s2-m1","name":"Milestone 1","progress":100},{"id":"g1-s2-m2","name":"Milestone 2","progress":100},{"id":"g1-s2-m3","name":"Milestone 3","progress":30},{"id":"g1-s2-m4","name":"Milestone 4","progress":0},{"id":"g1-s2-m5","name":"Milestone 5","progress":0}]},{"id":"g1-s3","name":"Stage 3","expanded":false,"milestones":[{"id":"g1-s3-m1","name":"Milestone 1","progress":0},{"id":"g1-s3-m2","name":"Milestone 2","progress":0},{"id":"g1-s3-m3","name":"Milestone 3","progress":0},{"id":"g1-s3-m4","name":"Milestone 4","progress":0},{"id":"g1-s3-m5","name":"Milestone 5","progress":0}]},{"id":"g1-s4","name":"Stage 4","expanded":false,"milestones":[{"id":"g1-s4-m1","name":"Milestone 1","progress":0},{"id":"g1-s4-m2","name":"Milestone 2","progress":0},{"id":"g1-s4-m3","name":"Milestone 3","progress":0},{"id":"g1-s4-m4","name":"Milestone 4","progress":0},{"id":"g1-s4-m5","name":"Milestone 5","progress":0}]}]},{"id":"goal-2","name":"Goal 2","expanded":false,"stages":[{"id":"g2-s1","name":"Stage 1","expanded":false,"milestones":[{"id":"g2-s1-m1","name":"Milestone 1","progress":100},{"id":"g2-s1-m2","name":"Milestone 2","progress":100},{"id":"g2-s1-m3","name":"Milestone 3","progress":100},{"id":"g2-s1-m4","name":"Milestone 4","progress":100},{"id":"g2-s1-m5","name":"Milestone 5","progress":0}]}]},{"id":"goal-3","name":"Goal 3","expanded":false,"stages":[{"id":"g3-s1","name":"Stage 1","expanded":false,"milestones":[{"id":"g3-s1-m1","name":"Milestone 1","progress":0},{"id":"g3-s1-m2","name":"Milestone 2","progress":0},{"id":"g3-s1-m3","name":"Milestone 3","progress":0},{"id":"g3-s1-m4","name":"Milestone 4","progress":0},{"id":"g3-s1-m5","name":"Milestone 5","progress":0}]}]}]};
+
+let PROJECT_DATA = structuredClone(EMBEDDED_PROJECT_DATA);
+let externalDataUrl = new URLSearchParams(location.search).get("data");
+let autoRefreshTimer = null;
+
+const $ = (sel) => document.querySelector(sel);
+const clamp = n => Math.max(0, Math.min(100, Number(n) || 0));
+const average = nums => nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : 0;
+const roundProgress = n => Math.round(clamp(n));
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+}[c]));
+
+function statusFromProgress(p){
+  const n = roundProgress(p);
+  if(n >= 100) return {label:"Completed", cls:"completed"};
+  if(n <= 0) return {label:"Not Started", cls:"not-started"};
+  return {label:"In Progress", cls:"in-progress"};
+}
+function allMilestones(goal){
+  return (goal.stages || []).flatMap(s => s.milestones || []);
+}
+function stageProgress(stage){
+  return average((stage.milestones || []).map(m => clamp(m.progress)));
+}
+function goalProgress(goal){
+  return average(allMilestones(goal).map(m => clamp(m.progress)));
+}
+function projectProgress(data){
+  return average((data.goals || []).flatMap(allMilestones).map(m => clamp(m.progress)));
+}
+function projectCounts(data){
+  const milestones = (data.goals || []).flatMap(allMilestones);
+  return {
+    total: milestones.length,
+    completed: milestones.filter(m => clamp(m.progress) >= 100).length
+  };
+}
+function iconChevron(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>`;
+}
+function iconGoal(){
+  return `<svg viewBox="0 0 40 40" fill="none">
+    <circle cx="20" cy="20" r="15" stroke="#ff7b00" stroke-width="4"/>
+    <circle cx="20" cy="20" r="8" stroke="#ff7b00" stroke-width="4"/>
+    <path d="M27 13 34 6M29 6h5v5" stroke="#ff7b00" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function iconStage(status){
+  if(status.cls === "completed"){
+    return `<svg viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="14" fill="#16b86f"/><path d="m10 17 4.5 4.5L24 12" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  if(status.cls === "in-progress"){
+    return `<svg viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="13" stroke="#278bff" stroke-width="4"/><path d="M17 4a13 13 0 0 1 11.2 6.4" stroke="#7fc3ff" stroke-width="4" stroke-linecap="round"/></svg>`;
+  }
+  return `<svg viewBox="0 0 34 34" fill="none">
+    <path d="m17 6 10 5-10 5L7 11l10-5Z" fill="#7d8daa"/>
+    <path d="m7 16 10 5 10-5M7 21l10 5 10-5" stroke="#7d8daa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function iconMilestone(status){
+  if(status.cls === "completed"){
+    return `<svg viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="13" fill="#12b86d"/><path d="m9 15 4 4 8-9" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  if(status.cls === "in-progress"){
+    return `<svg viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="12" stroke="#278bff" stroke-width="4"/><path d="M15 3a12 12 0 0 1 10.6 6.4" stroke="#8bcbff" stroke-width="4" stroke-linecap="round"/></svg>`;
+  }
+  return `<svg viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="11" stroke="#7d8daa" stroke-width="4"/></svg>`;
+}
+function progressBar(p, cls=""){
+  const n = roundProgress(p);
+  return `<span class="progress-number">${n}%</span><span class="bar ${cls}"><i style="width:${n}%"></i></span>`;
+}
+function statePill(p){
+  const s = statusFromProgress(p);
+  return `<span class="state ${s.cls}">${s.label}</span>`;
+}
+function rowHtml({kind,id,title,meta,progress,expanded,hasChildren,parentGoal,parentStage}){
+  const s = statusFromProgress(progress);
+  const classes = ["row","grid",`${kind}-row`];
+  if(kind === "stage") classes.push("indent-stage");
+  if(kind === "milestone") classes.push("indent-mile");
+
+  let icon = kind === "goal" ? iconGoal() : kind === "stage" ? iconStage(s) : iconMilestone(s);
+  let toggle = hasChildren
+    ? `<button class="toggle" type="button" aria-label="Toggle ${esc(title)}" aria-expanded="${!!expanded}" data-toggle-kind="${kind}" data-id="${esc(id)}">${iconChevron()}</button>`
+    : `<span class="toggle placeholder">${iconChevron()}</span>`;
+
+  return `
+    <div class="${classes.join(" ")}" data-kind="${kind}" data-id="${esc(id)}"
+      ${parentGoal ? `data-parent-goal="${esc(parentGoal)}"` : ""}
+      ${parentStage ? `data-parent-stage="${esc(parentStage)}"` : ""}>
+      <div class="item-cell">
+        ${toggle}
+        <span class="symbol">${icon}</span>
+        <div class="item-label">
+          <div class="item-title">${esc(title)}</div>
+          ${meta ? `<div class="item-meta">${esc(meta)}</div>` : ""}
+        </div>
+      </div>
+      <div class="progress-cell">${progressBar(progress, s.cls === "completed" ? "green" : s.cls === "in-progress" ? "blue" : "")}</div>
+      <div class="status-cell">${statePill(progress)}</div>
+    </div>`;
+}
+function render(){
+  const data = PROJECT_DATA || {};
+  const project = data.project || {};
+  const goals = data.goals || [];
+  $("#projectName").textContent = project.name || "Untitled Project";
+  $("#projectSubtitle").textContent = project.subtitle || "";
+
+  const pp = projectProgress(data);
+  const ps = statusFromProgress(pp);
+  const counts = projectCounts(data);
+
+  $("#overallPercent").textContent = `${roundProgress(pp)}%`;
+  $("#overallBar").style.width = `${roundProgress(pp)}%`;
+  $("#overallCopy").textContent = `${counts.completed} of ${counts.total} milestones completed`;
+  $("#overallState").textContent = ps.label;
+  $("#projectStateTop").textContent = ps.label;
+
+  if(project.updatedAt){
+    const d = new Date(project.updatedAt);
+    $("#updatedAt").textContent = `Last updated: ${isNaN(d) ? project.updatedAt : d.toLocaleString()}`;
+  }else{
+    $("#updatedAt").textContent = "Last updated: —";
+  }
+
+  $("#emptyState").classList.toggle("hidden", goals.length > 0);
+
+  let rows = "";
+  for(const goal of goals){
+    const gp = goalProgress(goal);
+    const goalMilestones = allMilestones(goal);
+    rows += rowHtml({
+      kind:"goal", id:goal.id, title:goal.name,
+      meta:`${(goal.stages||[]).length} stages · ${goalMilestones.length} milestones`,
+      progress:gp, expanded:goal.expanded, hasChildren:(goal.stages||[]).length>0
+    });
+
+    for(const stage of (goal.stages || [])){
+      const sp = stageProgress(stage);
+      rows += rowHtml({
+        kind:"stage", id:stage.id, title:stage.name,
+        meta:`${(stage.milestones||[]).length} milestones`,
+        progress:sp, expanded:stage.expanded, hasChildren:(stage.milestones||[]).length>0,
+        parentGoal:goal.id
+      });
+
+      for(const milestone of (stage.milestones || [])){
+        rows += rowHtml({
+          kind:"milestone", id:milestone.id, title:milestone.name,
+          meta:"", progress:clamp(milestone.progress),
+          expanded:false, hasChildren:false, parentGoal:goal.id, parentStage:stage.id
+        });
+      }
+    }
+  }
+  $("#rows").innerHTML = rows;
+  applyVisibility();
+}
+function findGoal(id){ return (PROJECT_DATA.goals || []).find(g => String(g.id) === String(id)); }
+function findStage(id){
+  for(const g of (PROJECT_DATA.goals || [])){
+    const s = (g.stages || []).find(s => String(s.id) === String(id));
+    if(s) return s;
+  }
+}
+function applyVisibility(){
+  document.querySelectorAll(".stage-row").forEach(el=>{
+    const g = findGoal(el.dataset.parentGoal);
+    el.classList.toggle("hidden", !g?.expanded);
+  });
+  document.querySelectorAll(".milestone-row").forEach(el=>{
+    const g = findGoal(el.dataset.parentGoal);
+    const s = findStage(el.dataset.parentStage);
+    el.classList.toggle("hidden", !(g?.expanded && s?.expanded));
+  });
+}
+document.addEventListener("click", e=>{
+  const btn = e.target.closest("[data-toggle-kind]");
+  if(!btn) return;
+  const kind = btn.dataset.toggleKind;
+  const id = btn.dataset.id;
+  if(kind === "goal"){
+    const g = findGoal(id); if(g) g.expanded = !g.expanded;
+  }else if(kind === "stage"){
+    const s = findStage(id); if(s) s.expanded = !s.expanded;
+  }
+  render();
+});
+async function loadExternalData(){
+  if(!externalDataUrl) return false;
+  const url = new URL(externalDataUrl, location.href);
+  url.searchParams.set("_ts", Date.now());
+  const res = await fetch(url, {cache:"no-store"});
+  if(!res.ok) throw new Error(`Could not load ${url}: ${res.status}`);
+  PROJECT_DATA = await res.json();
+  render();
+  setupAutoRefresh();
+  return true;
+}
+async function refresh(){
+  const btn = $("#refreshBtn");
+  btn.disabled = true;
+  try{
+    if(externalDataUrl) await loadExternalData();
+    else {
+      PROJECT_DATA.project = PROJECT_DATA.project || {};
+      PROJECT_DATA.project.updatedAt = new Date().toISOString();
+      render();
+    }
+  }catch(err){
+    console.error(err);
+    alert("Refresh failed. Open DevTools for details.");
+  }finally{
+    btn.disabled = false;
+  }
+}
+function setupAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  const sec = Number(PROJECT_DATA?.project?.autoRefreshSeconds || 0);
+  if(externalDataUrl && sec > 0) autoRefreshTimer = setInterval(loadExternalData, sec * 1000);
+}
+$("#refreshBtn").addEventListener("click", refresh);
+
+(async function init(){
+  try{
+    if(externalDataUrl) await loadExternalData();
+    else { render(); setupAutoRefresh(); }
+  }catch(err){
+    console.error(err);
+    PROJECT_DATA = structuredClone(EMBEDDED_PROJECT_DATA);
+    render();
+  }
+})();
+</script>
+</body>
+</html>
